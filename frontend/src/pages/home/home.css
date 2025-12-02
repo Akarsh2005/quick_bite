@@ -1,0 +1,27 @@
+.home-page {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.food-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.food-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cart-floating-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.cart-floating-btn .btn {
+    padding: 12px 24px;
+    font-weight: 600;
+}
