@@ -1,0 +1,12 @@
+Model Test Results:
+==================================================
+Text: 'Show me all restaurants' -> Intent: list_restaurants (Confidence: 0.1238)
+Text: 'I want to order pizza' -> Intent: search_food_restaurant (Confidence: 0.0683)
+Text: 'What's in my cart?' -> Intent: clear_cart (Confidence: 0.0782)
+Text: 'Add burger to cart' -> Intent: add_to_cart (Confidence: 0.0809)
+Text: 'Update order status' -> Intent: update_status (Confidence: 0.1687)
+Text: 'Find Italian food' -> Intent: search_foods (Confidence: 0.1146)
+Text: 'Show my past orders' -> Intent: order_history (Confidence: 0.1156)
+Text: 'Where is my order?' -> Intent: list_orders (Confidence: 0.0868)
+Text: 'Go to home page' -> Intent: navigate_home (Confidence: 0.2036)
+Text: 'Delete restaurant Pizza Palace' -> Intent: delete_restaurant (Confidence: 0.1405)

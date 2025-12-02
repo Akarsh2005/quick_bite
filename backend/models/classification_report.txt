@@ -1,0 +1,32 @@
+                        precision    recall  f1-score   support
+
+              add_food       1.00      1.00      1.00        10
+           add_to_cart       1.00      1.00      1.00        10
+            clear_cart       0.50      1.00      0.67        10
+     create_restaurant       1.00      1.00      1.00        10
+     delete_restaurant       0.77      1.00      0.87        10
+          filter_price       1.00      1.00      1.00        10
+            list_foods       1.00      1.00      1.00        10
+           list_orders       1.00      1.00      1.00        10
+      list_restaurants       0.83      1.00      0.91        10
+         navigate_cart       1.00      0.90      0.95        10
+         navigate_home       1.00      1.00      1.00        10
+      navigate_profile       1.00      1.00      1.00        10
+  navigate_restaurants       1.00      0.90      0.95        10
+         order_history       1.00      1.00      1.00        10
+           place_order       1.00      0.90      0.95        10
+           remove_food       0.75      0.90      0.82        10
+  search_food_category       0.67      0.80      0.73        10
+      search_food_name       1.00      0.80      0.89        10
+search_food_restaurant       1.00      0.90      0.95        10
+          search_foods       0.78      0.70      0.74        10
+           track_order       0.75      0.60      0.67        10
+           update_cart       1.00      0.70      0.82        10
+     update_restaurant       1.00      0.90      0.95        10
+         update_status       0.62      1.00      0.77        10
+             view_cart       1.00      0.20      0.33        10
+    view_order_details       1.00      0.60      0.75        10
+
+              accuracy                           0.88       260
+             macro avg       0.91      0.88      0.87       260
+          weighted avg       0.91      0.88      0.87       260
