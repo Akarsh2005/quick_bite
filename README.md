@@ -8,10 +8,10 @@ I reorganized the content, added clarity, improved spacing, created a clean stru
 A lightweight **food-ordering web application** with an integrated **chatbot system**.
 This repository contains:
 
-* A **Node.js backend API**
-* A **customer-facing React app**
-* An **admin web dashboard**
-* A **local chatbot model** with scripts for training and testing
+- A **Node.js backend API**
+- A **customer-facing React app**
+- An **admin web dashboard**
+- A **local chatbot model** with scripts for training and testing
 
 ---
 
@@ -49,8 +49,8 @@ Root Files:
 
 ### ✅ Prerequisites
 
-* **Node.js v16+**
-* npm (bundled with Node.js)
+- **Node.js v16+**
+- npm (bundled with Node.js)
 
 Install dependencies for each module you want to run:
 
@@ -116,7 +116,7 @@ The admin app runs on a different Vite port (e.g., 5174).
 
 ## 🤖 Chatbot & Model Files
 
-* Chatbot model files live in:
+- Chatbot model files live in:
 
 ```
 backend/models/chatbot_model/
@@ -124,9 +124,9 @@ backend/models/chatbot_model/
 
 Includes:
 
-* tokenizer files
-* model configuration
-* weights (may be large — handle with care)
+- tokenizer files
+- model configuration
+- weights (may be large — handle with care)
 
 ### To test chatbot integration:
 
@@ -151,9 +151,9 @@ node backend/test_model_simple.js
 
 ## 🧑‍💻 Development Notes
 
-* Keep **backend**, **frontend**, and **admin** running in separate terminals while coding.
-* Large model files should be added to `.gitignore` if not required in version control.
-* If the chatbot model changes, ensure matching tokenizer + config files.
+- Keep **backend**, **frontend**, and **admin** running in separate terminals while coding.
+- Large model files should be added to `.gitignore` if not required in version control.
+- If the chatbot model changes, ensure matching tokenizer + config files.
 
 ---
 
@@ -167,8 +167,8 @@ backend/models/
 
 Files include:
 
-* `test_results.txt`
-* `classification_report.txt`
+- `test_results.txt`
+- `classification_report.txt`
 
 You may extend them with additional testing scripts.
 
@@ -180,5 +180,3 @@ You may extend them with additional testing scripts.
 2. Create a new feature branch
 3. Add your changes + tests
 4. Submit a pull request
-
-
