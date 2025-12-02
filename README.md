@@ -1,71 +1,184 @@
-# Quick Bite
+Here is an improved, polished, and **highly readable README.md** for your **Quick Bite** project.
+I reorganized the content, added clarity, improved spacing, created a clean structure, and made it easy for others to understand and use your project.
 
-A lightweight full-stack food-ordering project with a chatbot assistant. The repository includes a Node.js/Express backend, a Vite + React frontend, and an admin frontend. A small chatbot model and training artifacts are included under the backend models folder for local experiments.
+---
 
-## Project Structure
+# 🍔 Quick Bite
 
-- `backend/` — Express API, controllers, models, routes and a local chatbot model under `backend/models/chatbot_model`.
-- `frontend/` — Customer-facing React app (Vite).
-- `admin/` — Admin React app (Vite) for managing restaurants/orders.
-- `enhanced_chatbot_dataset.csv` / `enhanced_chatbot_dataset.json` — Chatbot training / dataset files.
-- `chatbot_data_generation.py` — Script used to prepare or augment chatbot datasets.
+A lightweight **food-ordering web application** with an integrated **chatbot system**.
+This repository contains:
 
-## Requirements
+* A **Node.js backend API**
+* A **customer-facing React app**
+* An **admin web dashboard**
+* A **local chatbot model** with scripts for training and testing
 
-- Node.js (>= 16 recommended)
-- npm (or yarn)
-- Optional: Python 3 for dataset scripts and model-related experimentation
+---
 
-## Setup & Run
+## 📂 Project Structure
 
-Open a terminal for each app (backend, frontend, admin) and run the basic install + dev start steps.
+```
+quick-bite/
+├── backend/                  # Node.js Backend API
+│   ├── Controllers/
+│   ├── Models/
+│   ├── Routes/
+│   ├── models/chatbot_model/ # Local chatbot model + tokenizer
+│   ├── test_model_simple.js
+│   ├── .env
+│   └── server.js
+│
+├── frontend/                 # Customer-facing React app (Vite)
+│   ├── src/
+│   └── vite.config.js
+│
+└── admin/                    # Admin dashboard (React + Vite)
+    ├── src/
+    └── vite.config.js
 
-Backend (API):
-```cmd
-cd backend
-npm install
-npm run dev
+Root Files:
+- chatbot_data_generation.py
+- enhanced_chatbot_dataset.csv
+- enhanced_chatbot_dataset.json
+- Additional helper scripts
 ```
 
-Frontend (Customer):
-```cmd
+---
+
+## 🚀 Quick Start
+
+### ✅ Prerequisites
+
+* **Node.js v16+**
+* npm (bundled with Node.js)
+
+Install dependencies for each module you want to run:
+
+```bash
+npm install
+```
+
+Run this inside **backend**, **frontend**, and **admin** folders.
+
+---
+
+# 🖥 Backend Setup
+
+### 1️⃣ Navigate to backend
+
+```bash
+cd backend
+```
+
+### 2️⃣ Install dependencies
+
+```bash
+npm install
+```
+
+### 3️⃣ Start the server
+
+```bash
+node server.js
+# or
+npm run start
+```
+
+💡 Configure variables inside the `backend/.env` file (create one if missing).
+
+---
+
+# 🌐 Frontend (Customer App)
+
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Admin Frontend:
-```cmd
+Vite will start the dev server (usually):
+
+👉 [http://localhost:5173](http://localhost:5173)
+
+---
+
+# 🛠 Admin Dashboard
+
+```bash
 cd admin
 npm install
 npm run dev
 ```
 
-Notes:
-- Scripts may differ depending on the `package.json` in each folder. If `npm run dev` does not exist, try `npm start` or inspect the `scripts` section in that folder's `package.json`.
-- The backend expects environment variables (see `.env` in `backend/` or `config/db.js` for DB connection). Create a `.env` file in `backend/` if necessary.
-
-## Chatbot Model
-
-- A local model and checkpoints are stored in `backend/models/chatbot_model/`. This is intended for experiments and local inference/testing, not production deployment.
-- Use `chatbot_data_generation.py` and the dataset files to retrain or expand conversational examples.
-
-## Tests
-
-- If tests exist, run them from the relevant package folder (e.g., `backend`):
-```cmd
-cd backend
-npm test
-```
-
-## Contributing
-
-- Create issues or PRs for bugs, feature requests, or documentation improvements.
-- For code changes, follow the existing project conventions and run lint/tests before submitting.
-
-## Contact
-
-- For questions about running the project or the chatbot model, open an issue or contact the repository owner.
+The admin app runs on a different Vite port (e.g., 5174).
 
 ---
-Generated README created by project helper script. Review and adjust environment and script commands to match your local `package.json` scripts.
+
+## 🤖 Chatbot & Model Files
+
+* Chatbot model files live in:
+
+```
+backend/models/chatbot_model/
+```
+
+Includes:
+
+* tokenizer files
+* model configuration
+* weights (may be large — handle with care)
+
+### To test chatbot integration:
+
+```bash
+node backend/test_model_simple.js
+```
+
+---
+
+## 🗂 Important Folders
+
+| Component           | Path                       |
+| ------------------- | -------------------------- |
+| API Routes          | `backend/Routes/`          |
+| Controllers         | `backend/Controllers/`     |
+| Mongo Models        | `backend/models/`          |
+| User App Components | `frontend/src/components/` |
+| User App Pages      | `frontend/src/pages/`      |
+| Admin App Source    | `admin/src/`               |
+
+---
+
+## 🧑‍💻 Development Notes
+
+* Keep **backend**, **frontend**, and **admin** running in separate terminals while coding.
+* Large model files should be added to `.gitignore` if not required in version control.
+* If the chatbot model changes, ensure matching tokenizer + config files.
+
+---
+
+## 🧪 Testing
+
+Test scripts and evaluation outputs can be found in:
+
+```
+backend/models/
+```
+
+Files include:
+
+* `test_results.txt`
+* `classification_report.txt`
+
+You may extend them with additional testing scripts.
+
+---
+
+## 🤝 Contributing
+
+1. Fork this repository
+2. Create a new feature branch
+3. Add your changes + tests
+4. Submit a pull request
+
+
