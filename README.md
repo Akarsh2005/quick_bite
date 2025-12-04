@@ -1,11 +1,6 @@
-Here is an improved, polished, and **highly readable README.md** for your **Quick Bite** project.
-I reorganized the content, added clarity, improved spacing, created a clean structure, and made it easy for others to understand and use your project.
+#  Quick Bite
 
----
-
-# 🍔 Quick Bite
-
-A lightweight **food-ordering web application** with an integrated **chatbot system**.
+A **food-ordering web application** with an integrated **chatbot system**.
 This repository contains:
 
 - A **Node.js backend API**
@@ -40,7 +35,6 @@ Root Files:
 - chatbot_data_generation.py
 - enhanced_chatbot_dataset.csv
 - enhanced_chatbot_dataset.json
-- Additional helper scripts
 ```
 
 ---
@@ -152,25 +146,7 @@ node backend/test_model_simple.js
 ## 🧑‍💻 Development Notes
 
 - Keep **backend**, **frontend**, and **admin** running in separate terminals while coding.
-- Large model files should be added to `.gitignore` if not required in version control.
 - If the chatbot model changes, ensure matching tokenizer + config files.
-
----
-
-## 🧪 Testing
-
-Test scripts and evaluation outputs can be found in:
-
-```
-backend/models/
-```
-
-Files include:
-
-- `test_results.txt`
-- `classification_report.txt`
-
-You may extend them with additional testing scripts.
 
 ---
 
