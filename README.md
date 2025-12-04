@@ -1,102 +1,100 @@
 #  Quick Bite
 
-A **food-ordering web application** with an integrated **chatbot system**.
-This repository contains:
+A food-ordering web application with an integrated chatbot system. This repository contains:
 
-- A **Node.js backend API**
-- A **customer-facing React app**
-- An **admin web dashboard**
-- A **local chatbot model** with scripts for training and testing
+* Customer-facing app (React + Vite)
+* Admin dashboard (React + Vite)
+* REST API backend (Express + MongoDB)
+* Local **chatbot intent classifier**
 
----
-
-## 📂 Project Structure
-
-```
-quick-bite/
-├── backend/                  # Node.js Backend API
-│   ├── Controllers/
-│   ├── Models/
-│   ├── Routes/
-│   ├── models/chatbot_model/ # Local chatbot model + tokenizer
-│   ├── test_model_simple.js
-│   ├── .env
-│   └── server.js
-│
-├── frontend/                 # Customer-facing React app (Vite)
-│   ├── src/
-│   └── vite.config.js
-│
-└── admin/                    # Admin dashboard (React + Vite)
-    ├── src/
-    └── vite.config.js
-
-Root Files:
-- chatbot_data_generation.py
-- enhanced_chatbot_dataset.csv
-- enhanced_chatbot_dataset.json
-```
+Includes: chatbot dataset generator, training scripts, model artifacts, and storage for chat sessions.
 
 ---
 
-## 🚀 Quick Start
+## 📂 Project Overview
 
-### ✅ Prerequisites
+### Core Modules
 
-- **Node.js v16+**
-- npm (bundled with Node.js)
-
-Install dependencies for each module you want to run:
-
-```bash
-npm install
-```
-
-Run this inside **backend**, **frontend**, and **admin** folders.
+| Component                      | Folder      | Description                                                                 |
+| ------------------------------ | ----------- | --------------------------------------------------------------------------- |
+| **Customer Frontend**          | `frontend/` | React + Vite app for browsing food, ordering, chatbot, cart, etc.           |
+| **Admin Dashboard**            | `admin/`    | Admin interface to manage restaurants, food items, orders, chatbot UI.      |
+| **Backend API**                | `backend/`  | Express + MongoDB REST API with authentication, food, orders, chatbot, etc. |
+| **Chatbot Training Utilities** | Root files  | `chatbot_data_generation.py`, `model.py`, datasets.                         |
 
 ---
 
-# 🖥 Backend Setup
+## ⚡ Quick Links (Most Important Files)
 
-### 1️⃣ Navigate to backend
+### 📌 Backend
+
+* **Server entry** — [`backend/server.js`](backend/server.js)
+* **Database config** — [`backend/config/db.js`](backend/config/db.js)
+* **Chatbot controller** — [`chatbotController.loadModel`](backend/Controllers/chatbotController.js)
+* **Chatbot routes** — [`backend/Routes/chatbotRoutes.js`](backend/Routes/chatbotRoutes.js)
+* **Local model tester** — [`backend/test_model_simple.js`](backend/test_model_simple.js)
+* **Model copy helper** — [`backend/copy_model_files.js`](backend/copy_model_files.js)
+
+### 🤖 Chatbot Model Files
+
+Stored in:
+
+```
+backend/models/chatbot_model/
+```
+
+Includes tokenizer, config, weight files, etc.
+
+### 💬 Frontend / Admin Chatbot UI
+
+* **Customer Chatbot:**
+
+  * [`frontend/src/components/Chatbot/Chatbot.jsx`](frontend/src/components/Chatbot/Chatbot.jsx)
+  * [`frontend/src/components/Chatbot/Chatbot.css`](frontend/src/components/Chatbot/Chatbot.css)
+
+* **Admin Chatbot:**
+
+  * [`admin/src/components/Chatbot/Chatbot.jsx`](admin/src/components/Chatbot/Chatbot.jsx)
+  * [`admin/src/components/Chatbot/Chatbot.css`](admin/src/components/Chatbot/Chatbot.css)
+
+### 📊 Dataset Files
+
+* [`enhanced_chatbot_dataset.csv`](enhanced_chatbot_dataset.csv)
+* [`enhanced_chatbot_dataset.json`](enhanced_chatbot_dataset.json)
+
+---
+
+## 📦 Requirements
+
+* **Node.js v14+**
+* **npm**
+* **MongoDB** (Local or Atlas)
+* Optional:
+
+  * **Python**, **PyTorch**, **Transformers** (for re-training model)
+
+---
+
+# 🚀 Setup (Local Development)
+
+## 1️⃣ Backend Setup
 
 ```bash
 cd backend
-```
-
-### 2️⃣ Install dependencies
-
-```bash
 npm install
 ```
 
-### 3️⃣ Start the server
+Copy or create `.env` → see `backend/.env` template.
+
+Start server:
 
 ```bash
-node server.js
-# or
-npm run start
+npm run server
 ```
-
-💡 Configure variables inside the `backend/.env` file (create one if missing).
 
 ---
 
-# 🌐 Frontend (Customer App)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Vite will start the dev server (usually):
-
-👉 [http://localhost:5173](http://localhost:5173)
-
----
-
-# 🛠 Admin Dashboard
+## 2️⃣ Admin Dashboard
 
 ```bash
 cd admin
@@ -104,55 +102,193 @@ npm install
 npm run dev
 ```
 
-The admin app runs on a different Vite port (e.g., 5174).
+---
+
+## 3️⃣ Customer Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
-## 🤖 Chatbot & Model Files
+# 🤖 Chatbot Notes
 
-- Chatbot model files live in:
+* Backend loads classifier from:
 
 ```
 backend/models/chatbot_model/
 ```
 
-Includes:
+Loader implementation:
 
-- tokenizer files
-- model configuration
-- weights (may be large — handle with care)
+👉 [`loadModel`](backend/Controllers/chatbotController.js)
 
-### To test chatbot integration:
+### Fallback Behavior
+
+If model files are missing → system uses **enhanced keyword-based fallback**.
+
+### Test Model Paths
+
+Run:
 
 ```bash
 node backend/test_model_simple.js
 ```
 
----
+### Regenerate dataset
 
-## 🗂 Important Folders
+Use:
 
-| Component           | Path                       |
-| ------------------- | -------------------------- |
-| API Routes          | `backend/Routes/`          |
-| Controllers         | `backend/Controllers/`     |
-| Mongo Models        | `backend/models/`          |
-| User App Components | `frontend/src/components/` |
-| User App Pages      | `frontend/src/pages/`      |
-| Admin App Source    | `admin/src/`               |
+* [`chatbot_data_generation.py`](chatbot_data_generation.py)
+
+Train/evaluate model with:
+
+* [`model.py`](model.py)
 
 ---
 
-## 🧑‍💻 Development Notes
+# 📡 API Reference
 
-- Keep **backend**, **frontend**, and **admin** running in separate terminals while coding.
-- If the chatbot model changes, ensure matching tokenizer + config files.
+### Base URL
+
+All endpoints are mounted under:
+
+```
+/api
+```
+
+Defined in `backend/server.js`.
 
 ---
 
-## 🤝 Contributing
+## 1) 👤 User API
 
-1. Fork this repository
-2. Create a new feature branch
-3. Add your changes + tests
-4. Submit a pull request
+| Method | Endpoint              | Description                |
+| ------ | --------------------- | -------------------------- |
+| POST   | `/api/users/register` | Register new user          |
+| POST   | `/api/users/login`    | Login (returns JWT)        |
+| GET    | `/api/users/profile`  | Get logged-in user profile |
+| GET    | `/api/users/:id`      | Fetch user by id           |
+| PUT    | `/api/users/:id`      | Update user                |
+
+---
+
+## 2) 🍽️ Restaurants API
+
+| Method | Endpoint               | Description         |
+| ------ | ---------------------- | ------------------- |
+| GET    | `/api/restaurants`     | Get all restaurants |
+| GET    | `/api/restaurants/:id` | Restaurant details  |
+| POST   | `/api/restaurants`     | Create (admin)      |
+| PUT    | `/api/restaurants/:id` | Update              |
+| DELETE | `/api/restaurants/:id` | Delete              |
+
+---
+
+## 3) 🍔 Food Menu API
+
+| Method | Endpoint        |
+| ------ | --------------- |
+| GET    | `/api/food`     |
+| GET    | `/api/food/:id` |
+| POST   | `/api/food`     |
+| PUT    | `/api/food/:id` |
+| DELETE | `/api/food/:id` |
+
+---
+
+## 4) 🧾 Orders API
+
+| Method | Endpoint                   | Description         |
+| ------ | -------------------------- | ------------------- |
+| POST   | `/api/orders`              | Place order         |
+| GET    | `/api/orders/:id`          | Get order           |
+| GET    | `/api/orders/user/:userId` | User orders         |
+| PUT    | `/api/orders/:id`          | Update order status |
+
+---
+
+## 5) 🛒 Cart API
+
+| Method | Endpoint            | Description       |
+| ------ | ------------------- | ----------------- |
+| GET    | `/api/cart/:userId` | User cart         |
+| POST   | `/api/cart`         | Add item          |
+| PUT    | `/api/cart/:cartId` | Update quantities |
+| DELETE | `/api/cart/:cartId` | Remove cart/item  |
+
+---
+
+## 6) 🤖 Chatbot + Chat Sessions
+
+| Method | Endpoint                    | Description                   |
+| ------ | --------------------------- | ----------------------------- |
+| POST   | `/api/chatbot`              | Send message → returns intent |
+| GET    | `/api/chatbot/model-status` | Check if model loaded         |
+
+### Chat Storage
+
+* GET → `/api/chat/sessions`
+* POST → `/api/chat/sessions`
+* GET → `/api/chat/sessions/:id/messages`
+* POST → `/api/chat/sessions/:id/messages`
+
+---
+
+# 📝 Notes
+
+* Exact routes & auth rules are in:
+  `backend/Routes/*.js`
+* Protected routes require:
+
+```
+Authorization: Bearer <token>
+```
+
+Middleware:
+`backend/Middleware/auth.js`
+
+---
+
+# 🗂 Project Structure (Top-Level)
+
+```
+backend/   – API, models, chatbot model
+admin/     – Admin dashboard
+frontend/  – Customer app
+chatbot_data_generation.py
+model.py
+enhanced_chatbot_dataset.*
+```
+
+---
+
+# 🔧 Common Developer Tasks
+
+* Update chatbot model files → place them in:
+
+```
+backend/models/chatbot_model/
+```
+
+* Inspect chat session models:
+
+```
+backend/models/chatSessionModel.js
+backend/models/chatMessageModel.js
+```
+
+---
+
+# 🤝 Contributing
+
+1. Fork
+2. Create feature branch
+3. Commit
+4. Open PR
+
+---
+
