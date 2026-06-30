@@ -750,18 +750,18 @@ const extractCategory = (message) => {
 };
 
 // Get Chat History
-const getChatHistory = async (req, res) => {
+const getChatHistory = async (req, res, next) => {
     try {
         const { sessionId } = req.params;
         const messages = await chatMessageModel.find({ sessionId }).sort({ timestamp: 1 }).limit(50);
         res.json({ success: true, data: messages });
     } catch (error) {
-        res.status(500).json({ success: false, message: "Error retrieving chat history" });
+        next(error);
     }
 };
 
 // Admin Chat Handler
-const handleAdminChatMessage = async (req, res) => {
+const handleAdminChatMessage = async (req, res, next) => {
     try {
         const { message, sessionId, userId } = req.body;
 
@@ -837,16 +837,12 @@ const handleAdminChatMessage = async (req, res) => {
         });
 
     } catch (error) {
-        console.log('Admin chat error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: "Error processing admin message"
-        });
+        next(error);
     }
 };
 
 // Customer Chat Handler with Authentication
-const handleCustomerChatMessage = async (req, res) => {
+const handleCustomerChatMessage = async (req, res, next) => {
     try {
         const { message, sessionId, userId } = req.body;
         const token = req.headers.authorization?.replace('Bearer ', '');
@@ -945,11 +941,7 @@ const handleCustomerChatMessage = async (req, res) => {
         });
 
     } catch (error) {
-        console.log('Customer chat error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: "Error processing customer message"
-        });
+        next(error);
     }
 };
 

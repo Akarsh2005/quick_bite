@@ -1,33 +1,28 @@
 import restaurantModel from "../models/restaurantModel.js";
+import { applyQueryFeatures } from "../Utils/queryHelper.js";
 
-const listRestaurants = async (req, res) => {
+const listRestaurants = async (req, res, next) => {
     try {
-        const restaurants = await restaurantModel.find({});
-        res.json({ success: true, data: restaurants });
+        const result = await applyQueryFeatures(restaurantModel, req.query);
+        res.json({ success: true, data: result.data, pagination: result.pagination });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error retrieving restaurants" });
+        next(error);
     }
 };
 
-const createRestaurant = async (req, res) => {
+const createRestaurant = async (req, res, next) => {
     try {
         const { name, address, phone } = req.body;
-        if (!name || !address || !phone) {
-            return res.status(400).json({ success: false, message: "All fields are required" });
-        }
-
         const newRestaurant = new restaurantModel({ name, address, phone });
         await newRestaurant.save();
 
         res.status(201).json({ success: true, data: newRestaurant });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error creating restaurant" });
+        next(error);
     }
 };
 
-const getRestaurantById = async (req, res) => {
+const getRestaurantById = async (req, res, next) => {
     try {
         const { id } = req.params;
         const restaurant = await restaurantModel.findById(id);
@@ -36,12 +31,11 @@ const getRestaurantById = async (req, res) => {
         }
         res.json({ success: true, data: restaurant });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error retrieving restaurant" });
+        next(error);
     }
 };
 
-const updateRestaurant = async (req, res) => {
+const updateRestaurant = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { name, address, phone } = req.body;
@@ -56,12 +50,11 @@ const updateRestaurant = async (req, res) => {
         }
         res.json({ success: true, data: updatedRestaurant });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error updating restaurant" });
+        next(error);
     }
 };
 
-const deleteRestaurant = async (req, res) => {
+const deleteRestaurant = async (req, res, next) => {
     try {
         const { id } = req.params;
         const deletedRestaurant = await restaurantModel.findByIdAndDelete(id);
@@ -70,8 +63,7 @@ const deleteRestaurant = async (req, res) => {
         }
         res.json({ success: true, message: "Restaurant deleted" });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error deleting restaurant" });
+        next(error);
     }
 };
 

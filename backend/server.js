@@ -1,5 +1,4 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from "./config/db.js";
@@ -11,9 +10,11 @@ import foodRouter from './Routes/foodRoutes.js';
 import cartRouter from './Routes/cartRoutes.js';
 import orderRouter from './Routes/orderRoutes.js';
 import chatbotRouter from './Routes/chatbotRoutes.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger.js';
+import { errorHandler } from './Middleware/errorHandler.js';
 
 dotenv.config();
-connectDB();
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use('/api/foods', foodRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/chatbot', chatbotRouter);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -38,14 +40,18 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Centralized error handler
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 5001;
 
 // Connect to DB then start server
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
-        console.log(`🤖 Chatbot API ready at /api/chatbot/message`);
+        console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
     });
 }).catch(error => {
     console.error('Failed to start server:', error);
+    process.exit(1);
 });

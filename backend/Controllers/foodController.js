@@ -1,28 +1,27 @@
 import foodModel from "../models/foodModel.js";
 import restaurantModel from "../models/restaurantModel.js";
+import { applyQueryFeatures } from "../Utils/queryHelper.js";
 
-const listFood = async (req, res) => {
+const listFood = async (req, res, next) => {
     try {
-        const foods = await foodModel.find({}).populate('restaurantId');
-        res.json({ success: true, data: foods });
+        const result = await applyQueryFeatures(foodModel, req.query, 'restaurantId');
+        res.json({ success: true, data: result.data, pagination: result.pagination });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error retrieving food items" });
+        next(error);
     }
 };
 
-const listFoodByRestaurant = async (req, res) => {
+const listFoodByRestaurant = async (req, res, next) => {
     try {
         const { restaurantId } = req.params;
         const foods = await foodModel.find({ restaurantId }).populate('restaurantId');
         res.json({ success: true, data: foods });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error retrieving food items" });
+        next(error);
     }
 };
 
-const addFood = async (req, res) => {
+const addFood = async (req, res, next) => {
     try {
         const { name, description, price, category, restaurantId } = req.body;
 
@@ -42,12 +41,11 @@ const addFood = async (req, res) => {
         await food.save();
         res.json({ success: true, message: "Food Added", data: food });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error adding food item" });
+        next(error);
     }
 };
 
-const removeFood = async (req, res) => {
+const removeFood = async (req, res, next) => {
     try {
         const { id } = req.body;
         const food = await foodModel.findById(id);
@@ -59,15 +57,21 @@ const removeFood = async (req, res) => {
         res.json({ success: true, message: "Food Removed" });
 
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error removing food item" });
+        next(error);
     }
 };
 
-const updateFood = async (req, res) => {
+const updateFood = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { name, description, price, category, restaurantId } = req.body;
+
+        if (restaurantId) {
+            const restaurant = await restaurantModel.findById(restaurantId);
+            if (!restaurant) {
+                return res.status(404).json({ success: false, message: "Restaurant not found" });
+            }
+        }
 
         const updatedFood = await foodModel.findByIdAndUpdate(
             id,
@@ -81,8 +85,7 @@ const updateFood = async (req, res) => {
 
         res.json({ success: true, message: "Food Updated", data: updatedFood });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error updating food item" });
+        next(error);
     }
 };
 
