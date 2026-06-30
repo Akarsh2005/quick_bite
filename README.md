@@ -1,100 +1,175 @@
-#  Quick Bite
+# 🍔 Quick Bite — Food Delivery Platform
 
-A food-ordering web application with an integrated chatbot system. This repository contains:
-
-* Customer-facing app (React + Vite)
-* Admin dashboard (React + Vite)
-* REST API backend (Express + MongoDB)
-* Local **chatbot intent classifier**
-
-Includes: chatbot dataset generator, training scripts, model artifacts, and storage for chat sessions.
+A full-stack food delivery web application built with the **MERN stack** (MongoDB, Express, React, Node.js). Includes a customer-facing app, admin dashboard, REST API backend, and an integrated NLP chatbot.
 
 ---
 
-## 📂 Project Overview
+## 📋 Table of Contents
 
-### Core Modules
-
-| Component                      | Folder      | Description                                                                 |
-| ------------------------------ | ----------- | --------------------------------------------------------------------------- |
-| **Customer Frontend**          | `frontend/` | React + Vite app for browsing food, ordering, chatbot, cart, etc.           |
-| **Admin Dashboard**            | `admin/`    | Admin interface to manage restaurants, food items, orders, chatbot UI.      |
-| **Backend API**                | `backend/`  | Express + MongoDB REST API with authentication, food, orders, chatbot, etc. |
-| **Chatbot Training Utilities** | Root files  | `chatbot_data_generation.py`, `model.py`, datasets.                         |
+- [Features](#features)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+  - [1. Backend Setup](#1-backend-setup)
+  - [2. Admin Dashboard](#2-admin-dashboard)
+  - [3. Customer Frontend](#3-customer-frontend)
+- [Environment Variables](#environment-variables)
+- [API Reference](#api-reference)
+- [API Docs (Swagger UI)](#api-docs-swagger-ui)
+- [Security](#security)
+- [Chatbot System](#chatbot-system)
+- [Contributing](#contributing)
 
 ---
 
-## ⚡ Quick Links (Most Important Files)
+## ✨ Features
 
-### 📌 Backend
+| Feature | Description |
+|---|---|
+| 🛍️ Browse Restaurants | List, filter, and search food restaurants |
+| 🍔 Food Menu | Browse menu items per restaurant with categories |
+| 🛒 Cart Management | Add/remove items; cart stored on user account |
+| 📦 Order Placement | Place orders with full order history |
+| 💳 Stripe Payments | Secure payment processing with Stripe |
+| 👤 Authentication | JWT-based user registration and login |
+| 🔐 Role-Based Access | Customer vs. Admin role enforcement |
+| 🤖 AI Chatbot | Intent-based chatbot with NLP fallback |
+| 📚 API Docs | Full Swagger/OpenAPI documentation at `/api-docs` |
+| 📑 Pagination | All list endpoints support pagination, filtering, sorting |
 
-* **Server entry** — [`backend/server.js`](backend/server.js)
-* **Database config** — [`backend/config/db.js`](backend/config/db.js)
-* **Chatbot controller** — [`chatbotController.loadModel`](backend/Controllers/chatbotController.js)
-* **Chatbot routes** — [`backend/Routes/chatbotRoutes.js`](backend/Routes/chatbotRoutes.js)
-* **Local model tester** — [`backend/test_model_simple.js`](backend/test_model_simple.js)
-* **Model copy helper** — [`backend/copy_model_files.js`](backend/copy_model_files.js)
+---
 
-### 🤖 Chatbot Model Files
-
-Stored in:
+## 🏗️ Architecture
 
 ```
-backend/models/chatbot_model/
+┌───────────────────────────────────────────────────┐
+│                   Client Layer                    │
+│  React + Vite (frontend/)   React + Vite (admin/) │
+└──────────────────┬────────────────────────────────┘
+                   │ HTTP/REST
+┌──────────────────▼────────────────────────────────┐
+│              Express.js Backend                   │
+│  Routes → Validators → Auth Middleware            │
+│  Controllers → MongoDB Models (Mongoose)           │
+│  Swagger UI at /api-docs                          │
+└──────────────────┬────────────────────────────────┘
+                   │
+         ┌─────────▼─────────┐
+         │   MongoDB Atlas   │
+         └───────────────────┘
 ```
 
-Includes tokenizer, config, weight files, etc.
+---
 
-### 💬 Frontend / Admin Chatbot UI
+## 📂 Project Structure
 
-* **Customer Chatbot:**
-
-  * [`frontend/src/components/Chatbot/Chatbot.jsx`](frontend/src/components/Chatbot/Chatbot.jsx)
-  * [`frontend/src/components/Chatbot/Chatbot.css`](frontend/src/components/Chatbot/Chatbot.css)
-
-* **Admin Chatbot:**
-
-  * [`admin/src/components/Chatbot/Chatbot.jsx`](admin/src/components/Chatbot/Chatbot.jsx)
-  * [`admin/src/components/Chatbot/Chatbot.css`](admin/src/components/Chatbot/Chatbot.css)
-
-### 📊 Dataset Files
-
-* [`enhanced_chatbot_dataset.csv`](enhanced_chatbot_dataset.csv)
-* [`enhanced_chatbot_dataset.json`](enhanced_chatbot_dataset.json)
+```
+quick_bite/
+├── backend/                    # Express.js REST API
+│   ├── config/
+│   │   ├── db.js               # MongoDB connection
+│   │   └── swagger.js          # OpenAPI configuration
+│   ├── Controllers/            # Business logic
+│   │   ├── cartController.js
+│   │   ├── chatbotController.js
+│   │   ├── foodController.js
+│   │   ├── orderController.js
+│   │   ├── restaurantController.js
+│   │   └── userController.js
+│   ├── Middleware/
+│   │   ├── auth.js             # JWT auth, adminAuth, paymentAuth
+│   │   ├── errorHandler.js     # Centralized error handling
+│   │   └── validator.js        # express-validator helper
+│   ├── models/                 # Mongoose schemas
+│   │   ├── cartModel.js
+│   │   ├── foodModel.js
+│   │   ├── orderModel.js
+│   │   ├── restaurantModel.js
+│   │   └── userModel.js
+│   ├── Routes/                 # Express routes with Swagger JSDoc
+│   │   ├── cartRoutes.js
+│   │   ├── chatbotRoutes.js
+│   │   ├── foodRoutes.js
+│   │   ├── orderRoutes.js
+│   │   ├── restaurantRoutes.js
+│   │   └── userRoutes.js
+│   ├── Utils/
+│   │   └── queryHelper.js      # Pagination, filtering, sorting
+│   ├── .env.example            # Environment variable template
+│   ├── package.json
+│   └── server.js               # App entry point
+├── frontend/                   # Customer React app
+├── admin/                      # Admin React dashboard
+├── chatbot_data_generation.py  # Chatbot dataset generator
+├── model.py                    # Chatbot model training
+└── README.md                   # This file
+```
 
 ---
 
-## 📦 Requirements
+## 🛠️ Tech Stack
 
-* **Node.js v14+**
-* **npm**
-* **MongoDB** (Local or Atlas)
-* Optional:
-
-  * **Python**, **PyTorch**, **Transformers** (for re-training model)
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js 18+ |
+| Framework | Express.js 4.x |
+| Database | MongoDB (Mongoose 7.x) |
+| Auth | JSON Web Tokens (jsonwebtoken) |
+| Passwords | bcrypt |
+| Validation | express-validator |
+| Payments | Stripe |
+| API Docs | swagger-jsdoc + swagger-ui-express |
+| Chatbot | @xenova/transformers + node-nlp |
+| Frontend | React 18 + Vite |
 
 ---
 
-# 🚀 Setup (Local Development)
+## ⚙️ Prerequisites
 
-## 1️⃣ Backend Setup
+- **Node.js v18+** and **npm v9+**
+- **MongoDB** (Atlas cloud or local instance)
+- **Stripe account** (for payment processing — test keys work)
+- Optional: **Python 3.9+**, PyTorch, Transformers (for retraining chatbot)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Backend Setup
 
 ```bash
 cd backend
 npm install
 ```
 
-Copy or create `.env` → see `backend/.env` template.
+Copy the environment template and fill in your values:
 
-Start server:
+```bash
+cp .env.example .env
+# Edit .env with your MONGO_URI, JWT_SECRET, STRIPE_SECRET_KEY
+```
+
+Start in development mode (with auto-reload via nodemon):
 
 ```bash
 npm run server
 ```
 
+Start in production mode:
+
+```bash
+npm start
+```
+
+The server starts at **http://localhost:5001**.
+
+> **API Docs** available at **http://localhost:5001/api-docs**
+
 ---
 
-## 2️⃣ Admin Dashboard
+### 2. Admin Dashboard
 
 ```bash
 cd admin
@@ -102,9 +177,11 @@ npm install
 npm run dev
 ```
 
+Admin panel starts at **http://localhost:5174** (or next available port).
+
 ---
 
-## 3️⃣ Customer Frontend
+### 3. Customer Frontend
 
 ```bash
 cd frontend
@@ -112,183 +189,318 @@ npm install
 npm run dev
 ```
 
----
-
-# 🤖 Chatbot Notes
-
-* Backend loads classifier from:
-
-```
-backend/models/chatbot_model/
-```
-
-Loader implementation:
-
-👉 [`loadModel`](backend/Controllers/chatbotController.js)
-
-### Fallback Behavior
-
-If model files are missing → system uses **enhanced keyword-based fallback**.
-
-### Test Model Paths
-
-Run:
-
-```bash
-node backend/test_model_simple.js
-```
-
-### Regenerate dataset
-
-Use:
-
-* [`chatbot_data_generation.py`](chatbot_data_generation.py)
-
-Train/evaluate model with:
-
-* [`model.py`](model.py)
+Customer app starts at **http://localhost:5173**.
 
 ---
 
-# 📡 API Reference
+## 🔑 Environment Variables
 
-### Base URL
+All backend environment variables are defined in `backend/.env.example`.
 
-All endpoints are mounted under:
+| Variable | Required | Description |
+|---|---|---|
+| `PORT` | No | Server port (default: 5001) |
+| `NODE_ENV` | No | `development` or `production` |
+| `MONGO_URI` | ✅ Yes | MongoDB connection string |
+| `JWT_SECRET` | ✅ Yes | Secret for signing JWT tokens |
+| `JWT_EXPIRE` | No | Token expiry (default: `1h`) |
+| `STRIPE_SECRET_KEY` | ✅ Yes | Stripe secret key |
+| `FRONTEND_URL` | No | Frontend URL for Stripe redirects (default: `http://localhost:5173`) |
 
-```
-/api
+---
+
+## 📡 API Reference
+
+> All endpoints are prefixed with `/api`. For interactive docs, see [Swagger UI](#api-docs-swagger-ui).
+
+### 👤 Users
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/users/register` | None | Register a new user |
+| `POST` | `/api/users/login` | None | Login and get JWT token |
+
+**Register — Example Request:**
+```json
+POST /api/users/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securepass123"
+}
 ```
 
-Defined in `backend/server.js`.
-
----
-
-## 1) 👤 User API
-
-| Method | Endpoint              | Description                |
-| ------ | --------------------- | -------------------------- |
-| POST   | `/api/users/register` | Register new user          |
-| POST   | `/api/users/login`    | Login (returns JWT)        |
-| GET    | `/api/users/profile`  | Get logged-in user profile |
-| GET    | `/api/users/:id`      | Fetch user by id           |
-| PUT    | `/api/users/:id`      | Update user                |
-
----
-
-## 2) 🍽️ Restaurants API
-
-| Method | Endpoint               | Description         |
-| ------ | ---------------------- | ------------------- |
-| GET    | `/api/restaurants`     | Get all restaurants |
-| GET    | `/api/restaurants/:id` | Restaurant details  |
-| POST   | `/api/restaurants`     | Create (admin)      |
-| PUT    | `/api/restaurants/:id` | Update              |
-| DELETE | `/api/restaurants/:id` | Delete              |
-
----
-
-## 3) 🍔 Food Menu API
-
-| Method | Endpoint        |
-| ------ | --------------- |
-| GET    | `/api/food`     |
-| GET    | `/api/food/:id` |
-| POST   | `/api/food`     |
-| PUT    | `/api/food/:id` |
-| DELETE | `/api/food/:id` |
-
----
-
-## 4) 🧾 Orders API
-
-| Method | Endpoint                   | Description         |
-| ------ | -------------------------- | ------------------- |
-| POST   | `/api/orders`              | Place order         |
-| GET    | `/api/orders/:id`          | Get order           |
-| GET    | `/api/orders/user/:userId` | User orders         |
-| PUT    | `/api/orders/:id`          | Update order status |
-
----
-
-## 5) 🛒 Cart API
-
-| Method | Endpoint            | Description       |
-| ------ | ------------------- | ----------------- |
-| GET    | `/api/cart/:userId` | User cart         |
-| POST   | `/api/cart`         | Add item          |
-| PUT    | `/api/cart/:cartId` | Update quantities |
-| DELETE | `/api/cart/:cartId` | Remove cart/item  |
-
----
-
-## 6) 🤖 Chatbot + Chat Sessions
-
-| Method | Endpoint                    | Description                   |
-| ------ | --------------------------- | ----------------------------- |
-| POST   | `/api/chatbot`              | Send message → returns intent |
-| GET    | `/api/chatbot/model-status` | Check if model loaded         |
-
-### Chat Storage
-
-* GET → `/api/chat/sessions`
-* POST → `/api/chat/sessions`
-* GET → `/api/chat/sessions/:id/messages`
-* POST → `/api/chat/sessions/:id/messages`
-
----
-
-# 📝 Notes
-
-* Exact routes & auth rules are in:
-  `backend/Routes/*.js`
-* Protected routes require:
-
+**Register — Example Response:**
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "64abc123...",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "role": "customer"
+  }
+}
 ```
+
+---
+
+### 🍽️ Restaurants
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/restaurants/list` | None | List all restaurants (paginated) |
+| `GET` | `/api/restaurants/:id` | None | Get single restaurant |
+| `POST` | `/api/restaurants/add` | Admin | Create a restaurant |
+| `PUT` | `/api/restaurants/:id` | Admin | Update a restaurant |
+| `DELETE` | `/api/restaurants/:id` | Admin | Delete a restaurant |
+
+**List — Query Parameters (all optional):**
+
+| Param | Type | Example | Description |
+|---|---|---|---|
+| `page` | number | `?page=2` | Page number (default: 1) |
+| `limit` | number | `?limit=10` | Items per page (default: 10) |
+| `sortBy` | string | `?sortBy=name` | Field to sort by |
+| `order` | string | `?order=asc` | `asc` or `desc` (default: `desc`) |
+| `search` | string | `?search=pizza` | Search by name |
+
+---
+
+### 🍔 Food
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/foods/list` | None | List all food items (paginated) |
+| `GET` | `/api/foods/:id` | None | Get single food item |
+| `GET` | `/api/foods/restaurant/:restaurantId` | None | Get all food for a restaurant |
+| `POST` | `/api/foods/add` | Admin | Add a food item |
+| `PUT` | `/api/foods/:id` | Admin | Update a food item |
+| `DELETE` | `/api/foods` | Admin | Remove a food item (id in body) |
+
+---
+
+### 🛒 Cart
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/cart/add` | JWT | Add item to cart |
+| `POST` | `/api/cart/remove` | JWT | Remove item from cart |
+| `POST` | `/api/cart/get` | JWT | Get cart contents |
+
+**Add to Cart — Example Request:**
+```json
+POST /api/cart/add
 Authorization: Bearer <token>
-```
+Content-Type: application/json
 
-Middleware:
-`backend/Middleware/auth.js`
-
----
-
-# 🗂 Project Structure (Top-Level)
-
-```
-backend/   – API, models, chatbot model
-admin/     – Admin dashboard
-frontend/  – Customer app
-chatbot_data_generation.py
-model.py
-enhanced_chatbot_dataset.*
+{
+  "userId": "64abc123...",
+  "itemId": "64def456..."
+}
 ```
 
 ---
 
-# 🔧 Common Developer Tasks
+### 📦 Orders
 
-* Update chatbot model files → place them in:
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/orders/place` | JWT | Place order with online payment |
+| `POST` | `/api/orders/placecod` | JWT | Place Cash on Delivery order |
+| `POST` | `/api/orders/verify` | Payment | Verify Stripe payment result |
+| `POST` | `/api/orders/userorders` | JWT | Get user's order history |
+| `GET` | `/api/orders/list` | Admin | List all orders (paginated) |
+| `POST` | `/api/orders/status` | Admin | Update order status |
+
+**Place Order — Example Request:**
+```json
+POST /api/orders/place
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "userId": "64abc123...",
+  "items": [
+    { "_id": "64def456...", "name": "Burger", "price": 150, "quantity": 2 }
+  ],
+  "amount": 350,
+  "address": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "street": "123 Main St",
+    "city": "Mumbai",
+    "state": "MH",
+    "zipcode": "400001",
+    "country": "India",
+    "phone": "9876543210"
+  }
+}
+```
+
+---
+
+### 🤖 Chatbot
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/chatbot/admin/message` | Admin | Admin chatbot — intent classification with DB operations |
+| `POST` | `/api/chatbot/customer/message` | None | Customer chatbot — NLP search and order awareness |
+| `GET` | `/api/chatbot/history/:sessionId` | None | Get chat history for a session (last 50 messages) |
+
+**Customer Chatbot — Example Request:**
+```json
+POST /api/chatbot/customer/message
+Content-Type: application/json
+
+{
+  "message": "What restaurants are available?",
+  "sessionId": "session_abc123",
+  "userId": "64abc123..."
+}
+```
+
+---
+
+## 📚 API Docs (Swagger UI)
+
+Interactive API documentation is available when the backend is running:
+
+> **http://localhost:5001/api-docs**
+
+Features:
+- Browse all endpoints organized by tag (Users, Restaurants, Food, Cart, Orders, Chatbot)
+- Try requests directly from the browser
+- View request/response schemas and examples
+- Authenticate using the **Authorize** button with a Bearer JWT token
+
+---
+
+## 🔐 Security
+
+### Authentication Flow
+
+1. Call `POST /api/users/login` with `{email, password}`
+2. Receive a **JWT token** in the response
+3. Include the token in all protected requests:
+
+```http
+Authorization: Bearer <your_jwt_token>
+```
+
+### Middleware Layers
+
+| Middleware | File | Applied To |
+|---|---|---|
+| `authMiddleware` | `Middleware/auth.js` | All user-protected routes |
+| `adminAuth` | `Middleware/auth.js` | Admin-only operations (CRUD restaurants, food, order status) |
+| `paymentAuth` | `Middleware/auth.js` | Payment verification endpoint |
+
+### Roles
+
+| Role | Access |
+|---|---|
+| `customer` | Browse, cart, orders, chatbot |
+| `admin` | Everything + restaurant/food management, all order operations |
+
+> Set a user's role directly in MongoDB or via admin tooling. On registration, all users default to `customer`.
+
+---
+
+## 🤖 Chatbot System
+
+The chatbot uses a two-tier approach:
+
+1. **Primary**: `@xenova/transformers` — a local ML model for intent classification
+2. **Fallback**: Enhanced keyword-based matching via `node-nlp`
+
+### Model Location
 
 ```
 backend/models/chatbot_model/
 ```
 
-* Inspect chat session models:
+The model is loaded at startup. If model files are missing, the system automatically falls back to keyword matching — the API never fails.
 
+### Retrain the Model
+
+Generate a new dataset:
+```bash
+python chatbot_data_generation.py
 ```
-backend/models/chatSessionModel.js
-backend/models/chatMessageModel.js
+
+Train and evaluate:
+```bash
+python model.py
+```
+
+Place the output artifacts in `backend/models/chatbot_model/`.
+
+---
+
+## 📊 Standard API Response Format
+
+All API responses follow a consistent format:
+
+**Success:**
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": "Optional message"
+}
+```
+
+**Paginated List:**
+```json
+{
+  "success": true,
+  "data": [ ... ],
+  "pagination": {
+    "total": 100,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 10
+  }
+}
+```
+
+**Error:**
+```json
+{
+  "success": false,
+  "message": "Descriptive error message"
+}
+```
+
+**Validation Error:**
+```json
+{
+  "success": false,
+  "message": "name is required, email must be a valid email",
+  "errors": [
+    { "field": "name", "msg": "name is required" },
+    { "field": "email", "msg": "email must be a valid email" }
+  ]
+}
 ```
 
 ---
 
-# 🤝 Contributing
+## 🤝 Contributing
 
-1. Fork
-2. Create feature branch
-3. Commit
-4. Open PR
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Commit changes: `git commit -m "feat: add my feature"`
+4. Push to the branch: `git push origin feature/my-feature`
+5. Open a Pull Request
 
 ---
 
+## 📝 License
+
+This project is for educational purposes.
