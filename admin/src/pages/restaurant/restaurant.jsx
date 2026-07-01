@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import axios from 'axios';
-// import './restaurant.css';
+import API from '../../api/axios';
 
 const Restaurants = () => {
     const [restaurants, setRestaurants] = useState([]);
@@ -19,12 +18,12 @@ const Restaurants = () => {
 
     const fetchRestaurants = async () => {
         try {
-            const response = await axios.get('http://localhost:5001/api/restaurants/list');
+            const response = await API.get('/api/restaurants/list?limit=100');
             if (response.data.success) {
                 setRestaurants(response.data.data);
             }
         } catch (error) {
-            toast.error(`Failed to fetch restaurants: ${error.message}`);
+            toast.error(`Failed to fetch restaurants: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -33,11 +32,11 @@ const Restaurants = () => {
         try {
             if (editingId) {
                 // Update restaurant
-                await axios.put(`http://localhost:5001/api/restaurants/${editingId}`, formData);
+                await API.put(`/api/restaurants/${editingId}`, formData);
                 toast.success('Restaurant updated successfully');
             } else {
                 // Create restaurant
-                await axios.post('http://localhost:5001/api/restaurants/add', formData);
+                await API.post('/api/restaurants/add', formData);
                 toast.success('Restaurant created successfully');
             }
             setFormData({ name: '', address: '', phone: '' });
@@ -45,7 +44,7 @@ const Restaurants = () => {
             setShowForm(false);
             fetchRestaurants();
         } catch (error) {
-            toast.error(`Failed to save restaurant: ${error.message}`);
+            toast.error(`Failed to save restaurant: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -62,11 +61,11 @@ const Restaurants = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this restaurant?')) {
             try {
-                await axios.delete(`http://localhost:5001/api/restaurants/${id}`);
+                await API.delete(`/api/restaurants/${id}`);
                 toast.success('Restaurant deleted successfully');
                 fetchRestaurants();
             } catch (error) {
-                toast.error(`Failed to delete restaurant: ${error.message}`);
+                toast.error(`Failed to delete restaurant: ${error.response?.data?.message || error.message}`);
             }
         }
     };

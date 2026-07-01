@@ -7,7 +7,13 @@ const Chatbot = () => {
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [sessionId] = useState(`admin_session_${Date.now()}`);
+    const [sessionId] = useState(() => {
+        const existing = sessionStorage.getItem('admin_chatbot_session_id');
+        if (existing) return existing;
+        const newSessionId = `admin_session_${Date.now()}`;
+        sessionStorage.setItem('admin_chatbot_session_id', newSessionId);
+        return newSessionId;
+    });
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -29,33 +35,44 @@ const Chatbot = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    const sendMessage = async () => {
-        if (!inputMessage.trim() || isLoading) return;
+    const sendMessage = async (overrideMessage) => {
+        const textToSend = overrideMessage || inputMessage;
+        if (!textToSend.trim() || isLoading) return;
 
         const userMessage = {
             id: Date.now(),
-            text: inputMessage,
+            text: textToSend,
             sender: 'user',
             timestamp: new Date(),
             type: 'text'
         };
 
         setMessages(prev => [...prev, userMessage]);
-        setInputMessage('');
+        if (!overrideMessage) {
+            setInputMessage('');
+        }
         setIsLoading(true);
 
         try {
-            const user = JSON.parse(localStorage.getItem('user'));
+            const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
             
-            const response = await fetch('http://localhost:5001/api/chatbot/admin/message', {
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const response = await fetch(`${apiURL}/api/chatbot/admin/message`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: headers,
                 body: JSON.stringify({
-                    message: inputMessage,
+                    message: textToSend,
                     sessionId,
-                    userId: user?._id || 'admin_user'
+                    userId: user?._id || user?.id || 'admin_user'
                 })
             });
 
@@ -146,10 +163,7 @@ const Chatbot = () => {
     ];
 
     const handleQuickAction = (action) => {
-        setInputMessage(action.message);
-        setTimeout(() => {
-            sendMessage();
-        }, 100);
+        sendMessage(action.message);
     };
 
     const clearChat = () => {
@@ -314,7 +328,7 @@ const Chatbot = () => {
                                         disabled={isLoading}
                                     />
                                     <button 
-                                        onClick={sendMessage}
+                                        onClick={() => sendMessage()}
                                         className="send-btn"
                                         disabled={!inputMessage.trim() || isLoading}
                                     >

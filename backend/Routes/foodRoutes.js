@@ -3,6 +3,7 @@ import { check, param } from 'express-validator';
 import { addFood, listFood, removeFood, updateFood, listFoodByRestaurant } from '../Controllers/foodController.js';
 import { validateRequest } from '../Middleware/validator.js';
 import { adminAuth } from '../Middleware/auth.js';
+import { upload } from '../Middleware/upload.js';
 
 const foodRouter = express.Router();
 
@@ -196,6 +197,7 @@ foodRouter.get(
 foodRouter.post(
   "/add",
   adminAuth,
+  upload.single('image'),
   [
     check('name', 'Name is required').notEmpty(),
     check('description', 'Description is required').notEmpty(),
@@ -277,6 +279,7 @@ foodRouter.post(
 foodRouter.put(
   "/:id",
   adminAuth,
+  upload.single('image'),
   [
     param('id', 'Invalid food ID format').isMongoId(),
     check('name', 'Name is required').optional().notEmpty(),

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import API from '../../api/axios';
 import './orders.css';
 
 const Orders = () => {
@@ -12,25 +12,25 @@ const Orders = () => {
 
     const fetchOrders = async () => {
         try {
-            const response = await axios.get('http://localhost:5001/api/orders/list');
+            const response = await API.get('/api/orders/list?limit=100');
             if (response.data.success) {
                 setOrders(response.data.data);
             }
         } catch (error) {
-            toast.error(`Failed to fetch orders: ${error.message}`);
+            toast.error(`Failed to fetch orders: ${error.response?.data?.message || error.message}`);
         }
     };
 
     const updateOrderStatus = async (orderId, newStatus) => {
         try {
-            await axios.post('http://localhost:5001/api/orders/status', {
+            await API.post('/api/orders/status', {
                 orderId,
                 status: newStatus
             });
             toast.success('Order status updated successfully');
             fetchOrders();
         } catch (error) {
-            toast.error(`Failed to update order status: ${error.message}`);
+            toast.error(`Failed to update order status: ${error.response?.data?.message || error.message}`);
         }
     };
 

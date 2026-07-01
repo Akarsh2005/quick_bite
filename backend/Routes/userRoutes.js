@@ -1,7 +1,8 @@
 import express from 'express';
 import { check } from 'express-validator';
-import { loginUser, registerUser } from '../Controllers/userController.js';
+import { loginUser, registerUser, getProfile, updateProfile } from '../Controllers/userController.js';
 import { validateRequest } from '../Middleware/validator.js';
+import { authMiddleware } from '../Middleware/auth.js';
 
 const userRouter = express.Router();
 
@@ -160,6 +161,21 @@ userRouter.post(
     validateRequest
   ],
   loginUser
+);
+
+// GET /api/users/profile — get current user profile
+userRouter.get('/profile', authMiddleware, getProfile);
+
+// PUT /api/users/profile — update name or password
+userRouter.put(
+  '/profile',
+  authMiddleware,
+  [
+    check('name').optional().notEmpty().withMessage('Name cannot be empty'),
+    check('newPassword').optional().isLength({ min: 8 }).withMessage('New password must be at least 8 characters'),
+    validateRequest
+  ],
+  updateProfile
 );
 
 export default userRouter;

@@ -1,0 +1,7 @@
+.profile-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+.profile-page .card {
+    border-radius: 16px;
+}

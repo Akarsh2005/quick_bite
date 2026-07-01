@@ -188,22 +188,36 @@ const classifyWithEnhancedKeywords = (message, userType, previousIntents = []) =
             confidence = 0.7;
         }
     } else {
-        // Enhanced Customer intents with better patterns
-        if (messageLower.match(/(find|search|look.*for|show.*me|want|get|order).*(pizza|burger|pasta|sushi|salad|rice|noodles|chicken|biryani|dosa|idli)/i)) {
+        // Customer navigation triggers
+        if (messageLower.match(/(go\s+to|navigate\s+to|show|view|open)\s+(?:my\s+)?orders/i)) {
+            intent = 'customer_order_history';
+            confidence = 0.95;
+        }
+        else if (messageLower.match(/(go\s+to|navigate\s+to|show|view|open)\s+cart/i)) {
+            intent = 'customer_view_cart';
+            confidence = 0.95;
+        }
+        else if (messageLower.match(/(go\s+to|navigate\s+to|go\s+home|homepage|main\s+page)/i)) {
+            intent = 'customer_go_home';
+            confidence = 0.95;
+        }
+        // Add to cart vs remove from cart triggers
+        else if (messageLower.match(/(?:add|put|buy|insert)\s+/i)) {
+            intent = 'customer_add_to_cart';
+            confidence = 0.9;
+        }
+        else if (messageLower.match(/(?:remove|delete|discard|take\s+out|cancel)\s+/i)) {
+            intent = 'customer_remove_from_cart';
+            confidence = 0.9;
+        }
+        // Search & checkout triggers
+        else if (messageLower.match(/(find|search|look.*for|show.*me|want|get|order).*(pizza|burger|pasta|sushi|salad|rice|noodles|chicken|biryani|dosa|idli|sandwich|fries)/i)) {
             intent = 'customer_search_food_name';
             confidence = 0.9;
         } 
         else if (messageLower.match(/(find|search|show|want|get).*(italian|chinese|mexican|indian|japanese|fast food|asian|continental|south indian|north indian)/i)) {
             intent = 'customer_search_food_category';
             confidence = 0.8;
-        } 
-        else if (messageLower.match(/(add|put).*cart/i)) {
-            intent = 'customer_add_to_cart';
-            confidence = 0.9;
-        } 
-        else if (messageLower.match(/(view|show|see|my).*cart/i)) {
-            intent = 'customer_view_cart';
-            confidence = 0.9;
         } 
         else if (messageLower.match(/(checkout|place.*order|proceed.*payment|buy.*now|complete.*order)/i)) {
             intent = 'customer_place_order';
@@ -233,7 +247,7 @@ const classifyWithEnhancedKeywords = (message, userType, previousIntents = []) =
             intent = 'customer_ask_price';
             confidence = 0.7;
         }
-        else if (messageLower.match(/(remove|delete|clear).*cart/i)) {
+        else if (messageLower.match(/(clear|empty).*cart/i)) {
             intent = 'customer_clear_cart';
             confidence = 0.8;
         }
@@ -570,12 +584,13 @@ const processCustomerIntent = async (intent, message, session, userId, token) =>
             'customer_track_order',
             'customer_place_order',
             'customer_add_to_cart',
+            'customer_remove_from_cart',
             'customer_clear_cart'
         ];
 
         if (protectedIntents.includes(intent)) {
             if (!token || userId.startsWith('guest_')) {
-                return `🔒 Please log in to ${intent.replace('customer_', '').replace(/_/g, ' ')}. You can login from the main menu to access this feature.`;
+                return `🔒 Please log in to perform cart or order actions. You can log in from the login page!`;
             }
 
             try {
@@ -593,6 +608,8 @@ const processCustomerIntent = async (intent, message, session, userId, token) =>
             }
         }
 
+        const user = await userModel.findById(userId);
+
         switch (intent) {
             case 'customer_search_food_name':
                 const searchTerm = extractSearchTerm(message);
@@ -607,7 +624,7 @@ const processCustomerIntent = async (intent, message, session, userId, token) =>
                 const foodResults = foods.map(f => 
                     `🍽️ **${f.name}** - ₹${f.price}\n📝 ${f.description}\n🏪 ${f.restaurantId?.name}\n🏷️ ${f.category}`
                 ).join('\n\n');
-                return `🔍 **Found ${foods.length} ${searchTerm} items:**\n\n${foodResults}\n\n💡 You can add items to cart from the food menu!`;
+                return `🔍 **Found ${foods.length} ${searchTerm} items:**\n\n${foodResults}\n\n💡 You can ask me to add any of these to your cart! (e.g. "add ${foods[0].name}")`;
 
             case 'customer_search_food_category':
                 const category = extractCategory(message);
@@ -625,7 +642,6 @@ const processCustomerIntent = async (intent, message, session, userId, token) =>
                 return `🔍 **Found ${categoryFoods.length} ${category} items:**\n\n${categoryResults}`;
 
             case 'customer_view_cart':
-                const user = await userModel.findById(userId);
                 if (!user) {
                     return "❌ User not found. Please log in again.";
                 }
@@ -633,7 +649,7 @@ const processCustomerIntent = async (intent, message, session, userId, token) =>
                 const cartItems = Object.keys(user?.cartData || {});
                 
                 if (cartItems.length === 0) {
-                    return "🛒 Your cart is empty! Browse our menu and add some delicious items to get started!";
+                    return "🛒 Your cart is empty! Browse our menu and add some delicious items to get started! [NAVIGATE] /cart";
                 }
                 
                 const cartFoods = await foodModel.find({ _id: { $in: cartItems } });
@@ -648,26 +664,129 @@ const processCustomerIntent = async (intent, message, session, userId, token) =>
                     return sum + (food.price * quantity);
                 }, 0);
                 
-                return `🛒 **Your Cart** (${cartItems.length} items):\n\n${cartDetails}\n\n💰 **Total: ₹${total}**\n\n🚀 Ready to checkout? Visit your cart page to place your order!`;
+                return `🛒 **Your Cart** (${cartItems.length} items):\n\n${cartDetails}\n\n💰 **Total: ₹${total}**\n\n🚀 Opening your cart page... [NAVIGATE] /cart`;
 
-            case 'customer_add_to_cart':
-                return "🛒 To add items to your cart:\n\n1. Browse our food menu\n2. Click on any food item\n3. Click the 'Add to Cart' button\n4. Adjust quantity if needed\n\nI can help you find specific foods! Try: 'Find pizza' or 'Show Italian food'";
+            case 'customer_add_to_cart': {
+                if (!user) return "❌ User not found.";
+                
+                // Smart matching algorithm to find what food the user wants
+                const allFoods = await foodModel.find({});
+                let matchedFood = null;
+                const messageLower = message.toLowerCase();
 
-            case 'customer_place_order':
-                return "🚀 To place an order:\n\n1. Go to your cart page\n2. Review your items\n3. Click 'Proceed to Checkout'\n4. Enter your delivery address\n5. Choose payment method\n6. Confirm your order\n\nYour delicious food will be on its way! 🍕";
+                for (const food of allFoods) {
+                    if (messageLower.includes(food.name.toLowerCase())) {
+                        matchedFood = food;
+                        break;
+                    }
+                }
+
+                if (!matchedFood) {
+                    // Try word-by-word fallback matching
+                    const words = messageLower.split(/\s+/);
+                    for (const food of allFoods) {
+                        const foodWords = food.name.toLowerCase().split(/\s+/);
+                        if (foodWords.some(w => w.length > 3 && words.includes(w))) {
+                            matchedFood = food;
+                            break;
+                        }
+                    }
+                }
+
+                if (!matchedFood) {
+                    return "🛒 I couldn't identify which food item you want to add. Please specify the exact name (e.g. \"add Margherita Pizza\" or \"add Chicken Burger\").";
+                }
+
+                // Add to cart in database
+                const foodId = matchedFood._id.toString();
+                const currentCart = user.cartData || {};
+                currentCart[foodId] = (currentCart[foodId] || 0) + 1;
+                
+                await userModel.findByIdAndUpdate(userId, { cartData: currentCart });
+                
+                return `✅ Added 1x **${matchedFood.name}** (₹${matchedFood.price}) to your cart successfully! [ACTION] sync_cart`;
+            }
+
+            case 'customer_remove_from_cart': {
+                if (!user) return "❌ User not found.";
+                
+                const cartItems = Object.keys(user.cartData || {});
+                if (cartItems.length === 0) {
+                    return "🛒 Your cart is already empty!";
+                }
+
+                const cartFoods = await foodModel.find({ _id: { $in: cartItems } });
+                let matchedFood = null;
+                const messageLower = message.toLowerCase();
+
+                for (const food of cartFoods) {
+                    if (messageLower.includes(food.name.toLowerCase())) {
+                        matchedFood = food;
+                        break;
+                    }
+                }
+
+                if (!matchedFood) {
+                    const words = messageLower.split(/\s+/);
+                    for (const food of cartFoods) {
+                        const foodWords = food.name.toLowerCase().split(/\s+/);
+                        if (foodWords.some(w => w.length > 3 && words.includes(w))) {
+                            matchedFood = food;
+                            break;
+                        }
+                    }
+                }
+
+                if (!matchedFood) {
+                    return "🛒 I couldn't find that item in your cart. Please verify the name or check your cart using \"view cart\".";
+                }
+
+                const foodId = matchedFood._id.toString();
+                const currentCart = user.cartData || {};
+                
+                if (currentCart[foodId] > 1) {
+                    currentCart[foodId] -= 1;
+                } else {
+                    delete currentCart[foodId];
+                }
+                
+                await userModel.findByIdAndUpdate(userId, { cartData: currentCart });
+                
+                return `❌ Removed 1x **${matchedFood.name}** from your cart. [ACTION] sync_cart`;
+            }
+
+            case 'customer_place_order': {
+                if (!user) return "❌ User not found.";
+                const cartItems = Object.keys(user.cartData || {});
+                if (cartItems.length === 0) {
+                    return "🛒 Your cart is empty! Add some delicious food items first.";
+                }
+
+                // If user specifies address directly in checkout trigger, extract it
+                let addressInfo = "";
+                const addressMatch = message.match(/(?:address|at|to)\s+(.+)/i);
+                if (addressMatch) {
+                    addressInfo = `?address=${encodeURIComponent(addressMatch[1].trim())}`;
+                }
+
+                return `🚀 Opening secure checkout window... [NAVIGATE] /placeorder${addressInfo}`;
+            }
+
+            case 'customer_go_home':
+                return "🏠 Opening menu and home screen... [NAVIGATE] /";
 
             case 'customer_order_history':
                 const orders = await orderModel.find({ userId }).sort({ date: -1 }).limit(5);
                 
                 if (orders.length === 0) {
-                    return "📦 You haven't placed any orders yet. Ready to try our delicious food? Browse our menu to get started!";
+                    return "📦 You haven't placed any orders yet. Ready to try our delicious food? Browse our menu to get started! [NAVIGATE] /orders";
                 }
                 
                 const orderHistory = orders.map(o => {
                     const itemCount = o.items?.reduce((total, item) => total + (item.quantity || 1), 0) || 0;
                     return `📦 **Order #${o._id.toString().slice(-6)}**\n💰 ₹${o.amount} | 📦 ${o.status}\n📅 ${new Date(o.date).toLocaleDateString()}\n🍽️ ${itemCount} items`;
                 }).join('\n\n');
-                return `📦 **Your Recent Orders:**\n\n${orderHistory}\n\n💡 Click on any order to view details!`;
+                return `📦 **Your Recent Orders:**\n\n${orderHistory}\n\n🚀 Opening your orders logs... [NAVIGATE] /orders`;
 
             case 'customer_track_order':
                 const currentOrders = await orderModel.find({ 
@@ -682,15 +801,15 @@ const processCustomerIntent = async (intent, message, session, userId, token) =>
                     }).sort({ date: -1 }).limit(1);
                     
                     if (deliveredOrders.length > 0) {
-                        return "📦 All your recent orders have been delivered! 🎉\n\nReady for your next delicious meal? Browse our menu for more options!";
+                        return "📦 All your recent orders have been delivered! 🎉 [NAVIGATE] /orders";
                     }
-                    return "📦 You don't have any active orders to track. Place an order to get started!";
+                    return "📦 You don't have any active orders to track. [NAVIGATE] /orders";
                 }
                 
                 const trackOrders = currentOrders.map(o => 
                     `📦 **Order #${o._id.toString().slice(-6)}**\n📍 Status: ${o.status}\n💰 Amount: ₹${o.amount}\n📅 Ordered: ${new Date(o.date).toLocaleDateString()}`
                 ).join('\n\n');
-                return `📦 **Your Active Orders:**\n\n${trackOrders}\n\n🕒 We're preparing your food with love!`;
+                return `📦 **Your Active Orders:**\n\n${trackOrders}\n\n🕒 Redirecting you to orders view... [NAVIGATE] /orders`;
 
             case 'customer_list_restaurants':
                 const restaurants = await restaurantModel.find({});

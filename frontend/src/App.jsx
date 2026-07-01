@@ -14,6 +14,7 @@ import Cart from "./pages/cart/cart";
 import PlaceOrder from "./pages/placeorder/placeorder";
 import Orders from "./pages/orders/orders";
 import VerifyPayment from "./pages/verify/verify";
+import Profile from "./pages/profile/profile";
 
 // Chatbot Component
 import Chatbot from "./components/Chatbot/Chatbot";
@@ -75,6 +76,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <Orders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

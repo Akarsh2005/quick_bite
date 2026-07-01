@@ -1,13 +1,23 @@
-import React, { useState, useEffect } from 'react'; // Added useEffect import
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import API from '../../api/axios';
+import { useApp } from '../../context/AppContext';
 import './placeorder.css';
 
 const PlaceOrder = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { items, totalAmount, deliveryCharge, grandTotal } = location.state || {};
+    const { cartItems: contextItems, cartTotal: contextTotal, clearCart } = useApp();
+
+    // Read from location.state or fallback to global context
+    const stateItems = location.state?.items;
+    const items = stateItems || contextItems || [];
+    
+    const subtotal = location.state?.totalAmount !== undefined ? location.state.totalAmount : contextTotal;
+    const deliveryCharge = 50;
+    const grandTotal = subtotal + deliveryCharge;
+
     const [address, setAddress] = useState({
         street: '',
         city: '',
@@ -19,11 +29,26 @@ const PlaceOrder = () => {
     const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
+        // Redirect if cart is empty
         if (!items || items.length === 0) {
             toast.error('No items in cart');
             navigate('/cart');
+            return;
         }
-    }, [items, navigate]);
+
+        // Check for address query param in URL
+        const params = new URLSearchParams(location.search);
+        const queryAddress = params.get('address');
+        if (queryAddress) {
+            const parts = queryAddress.split(',').map(p => p.trim());
+            setAddress({
+                street: parts[0] || '',
+                city: parts[1] || '',
+                state: parts[2] || '',
+                pincode: parts[3] || ''
+            });
+        }
+    }, [items, navigate, location.search]);
 
     const handleAddressChange = (e) => {
         setAddress({
@@ -41,15 +66,14 @@ const PlaceOrder = () => {
         setLoading(true);
 
         try {
-            const token = localStorage.getItem('token');
             const orderData = {
-                userId: user?._id,
+                userId: user?._id || user?.id,
                 items: items.map(item => ({
                     _id: item._id,
                     name: item.name,
                     price: item.price,
                     quantity: item.quantity,
-                    restaurantId: item.restaurantId?._id
+                    restaurantId: item.restaurantId?._id || item.restaurantId
                 })),
                 amount: grandTotal,
                 address: address
@@ -57,18 +81,13 @@ const PlaceOrder = () => {
 
             let response;
             if (paymentMethod === 'cod') {
-                response = await axios.post('http://localhost:5001/api/orders/placecod', 
-                    orderData,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                response = await API.post('/api/orders/placecod', orderData);
             } else {
-                response = await axios.post('http://localhost:5001/api/orders/place', 
-                    orderData,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                response = await API.post('/api/orders/place', orderData);
             }
 
             if (response.data.success) {
+                clearCart(); // Clear cart state locally
                 if (paymentMethod === 'stripe') {
                     // Redirect to Stripe checkout
                     window.location.href = response.data.session_url;
@@ -78,7 +97,7 @@ const PlaceOrder = () => {
                 }
             }
         } catch (error) {
-            toast.error('Failed to place order');
+            toast.error(error.response?.data?.message || 'Failed to place order');
         } finally {
             setLoading(false);
         }
@@ -215,7 +234,7 @@ const PlaceOrder = () => {
                                 <hr />
                                 <div className="d-flex justify-content-between mb-2">
                                     <span>Subtotal:</span>
-                                    <span>₹{totalAmount}</span>
+                                    <span>₹{subtotal}</span>
                                 </div>
                                 <div className="d-flex justify-content-between mb-2">
                                     <span>Delivery Charge:</span>

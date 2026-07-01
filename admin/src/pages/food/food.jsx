@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import axios from 'axios';
-// import './food.css';
+import API from '../../api/axios';
 
 const Food = () => {
     const [foods, setFoods] = useState([]);
     const [restaurants, setRestaurants] = useState([]);
     const [showForm, setShowForm] = useState(false);
+    const [imageFile, setImageFile] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -23,7 +23,7 @@ const Food = () => {
 
     const fetchFoods = async () => {
         try {
-            const response = await axios.get('http://localhost:5001/api/foods/list');
+            const response = await API.get('/api/foods/list?limit=200');
             if (response.data.success) {
                 setFoods(response.data.data);
             }
@@ -34,7 +34,7 @@ const Food = () => {
 
     const fetchRestaurants = async () => {
         try {
-            const response = await axios.get('http://localhost:5001/api/restaurants/list');
+            const response = await API.get('/api/restaurants/list?limit=100');
             if (response.data.success) {
                 setRestaurants(response.data.data);
             }
@@ -46,25 +46,37 @@ const Food = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const foodData = {
-                ...formData,
-                price: parseFloat(formData.price)
+            const data = new FormData();
+            data.append('name', formData.name);
+            data.append('description', formData.description);
+            data.append('price', parseFloat(formData.price));
+            data.append('category', formData.category);
+            data.append('restaurantId', formData.restaurantId);
+            if (imageFile) {
+                data.append('image', imageFile);
+            }
+
+            const config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
             };
 
             if (editingId) {
-                await axios.put(`http://localhost:5001/api/foods/${editingId}`, foodData);
+                await API.put(`/api/foods/${editingId}`, data, config);
                 toast.success('Food item updated successfully');
             } else {
-                await axios.post('http://localhost:5001/api/foods/add', foodData);
+                await API.post('/api/foods/add', data, config);
                 toast.success('Food item created successfully');
             }
             
             setFormData({ name: '', description: '', price: '', category: '', restaurantId: '' });
+            setImageFile(null);
             setEditingId(null);
             setShowForm(false);
             fetchFoods();
         } catch (error) {
-            toast.error(`Failed to save food item: ${error.message}`);
+            toast.error(`Failed to save food item: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -74,7 +86,7 @@ const Food = () => {
             description: food.description,
             price: food.price.toString(),
             category: food.category,
-            restaurantId: food.restaurantId._id || food.restaurantId
+            restaurantId: food.restaurantId?._id || food.restaurantId
         });
         setEditingId(food._id);
         setShowForm(true);
@@ -83,11 +95,11 @@ const Food = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this food item?')) {
             try {
-                await axios.post('http://localhost:5001/api/foods/remove', { id });
+                await API.post('/api/foods/remove', { id });
                 toast.success('Food item deleted successfully');
                 fetchFoods();
             } catch (error) {
-                toast.error(`Failed to delete food item: ${error.message}`);
+                toast.error(`Failed to delete food item: ${error.response?.data?.message || error.message}`);
             }
         }
     };
@@ -189,6 +201,15 @@ const Food = () => {
                                             </select>
                                         </div>
                                     </div>
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Food Image</label>
+                                    <input
+                                        type="file"
+                                        className="form-control"
+                                        accept="image/*"
+                                        onChange={(e) => setImageFile(e.target.files[0])}
+                                    />
                                 </div>
                                 <div className="d-flex gap-2">
                                     <button type="submit" className="btn btn-success">

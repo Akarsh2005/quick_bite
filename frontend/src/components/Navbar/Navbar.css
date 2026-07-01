@@ -1,0 +1,23 @@
+.navbar-brand {
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+}
+
+.navbar .nav-link {
+    padding: 0.5rem 1rem;
+    transition: transform 0.2s ease;
+}
+
+.navbar .nav-link:hover {
+    transform: scale(1.05);
+}
+
+.navbar .dropdown-menu {
+    border-radius: 12px;
+}
+
+.navbar .dropdown-item {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}

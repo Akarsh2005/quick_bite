@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import API from '../../api/axios';
 
 const VerifyPayment = () => {
     const [searchParams] = useSearchParams();
@@ -12,7 +12,7 @@ const VerifyPayment = () => {
     useEffect(() => {
         const verifyPayment = async () => {
             try {
-                const response = await axios.post('http://localhost:5001/api/orders/verify', {
+                const response = await API.post('/api/orders/verify', {
                     orderId,
                     success
                 });

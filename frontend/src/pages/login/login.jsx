@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import API from '../../api/axios';
+import { useApp } from '../../context/AppContext';
 import './login.css';
 
 const Login = () => {
+    const { login } = useApp();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -24,11 +26,10 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:5001/api/users/login', formData);
+            const response = await API.post('/api/users/login', formData);
             
             if (response.data.success) {
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user));
+                login(response.data.user, response.data.token);
                 toast.success('Login successful!');
                 navigate('/');
             } else {

@@ -30,11 +30,14 @@ const addFood = async (req, res, next) => {
             return res.status(404).json({ success: false, message: "Restaurant not found" });
         }
 
+        const imageFilename = req.file ? req.file.filename : "";
+
         const food = new foodModel({
             name,
             description,
             price,
             category,
+            image: imageFilename,
             restaurantId
         });
 
@@ -73,9 +76,14 @@ const updateFood = async (req, res, next) => {
             }
         }
 
+        const updateData = { name, description, price, category, restaurantId };
+        if (req.file) {
+            updateData.image = req.file.filename;
+        }
+
         const updatedFood = await foodModel.findByIdAndUpdate(
             id,
-            { name, description, price, category, restaurantId },
+            updateData,
             { new: true }
         ).populate('restaurantId');
 

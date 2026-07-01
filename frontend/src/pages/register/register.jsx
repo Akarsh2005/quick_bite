@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import API from '../../api/axios';
+import { useApp } from '../../context/AppContext';
 import './register.css';
 
 const Register = () => {
+    const { login } = useApp();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -37,15 +39,14 @@ const Register = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:5001/api/users/register', {
+            const response = await API.post('/api/users/register', {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password
             });
             
             if (response.data.success) {
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user));
+                login(response.data.user, response.data.token);
                 toast.success('Registration successful!');
                 navigate('/');
             } else {

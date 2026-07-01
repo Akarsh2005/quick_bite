@@ -1,13 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../../context/AppContext';
 import './Chatbot.css';
 
 const Chatbot = () => {
+    const navigate = useNavigate();
+    const { fetchCart } = useApp();
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [sessionId] = useState(`customer_session_${Date.now()}`);
+    const [sessionId] = useState(() => {
+        const existing = sessionStorage.getItem('chatbot_session_id');
+        if (existing) return existing;
+        const newSessionId = `customer_session_${Date.now()}`;
+        sessionStorage.setItem('chatbot_session_id', newSessionId);
+        return newSessionId;
+    });
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const messagesEndRef = useRef(null);
 
@@ -26,7 +36,7 @@ const Chatbot = () => {
         setIsAuthenticated(!!token && !!user);
 
         // Initial bot message
-        const welcomeMessage = isAuthenticated 
+        const welcomeMessage = token && user
             ? "👋 Welcome back! I'm your food assistant! 🍕\n\nI can help you find delicious food, manage your cart, track orders, and more!\n\nWhat would you like to do today?"
             : "👋 Hi! I'm your food assistant! 🍕\n\nI can help you discover delicious food and navigate our app. Some features require login for full access.\n\nWhat would you like to explore?";
 
@@ -39,19 +49,22 @@ const Chatbot = () => {
         }]);
     }, [isAuthenticated]);
 
-    const sendMessage = async () => {
-        if (!inputMessage.trim() || isLoading) return;
+    const sendMessage = async (overrideMessage) => {
+        const textToSend = overrideMessage || inputMessage;
+        if (!textToSend.trim() || isLoading) return;
 
         const userMessage = {
             id: Date.now(),
-            text: inputMessage,
+            text: textToSend,
             sender: 'user',
             timestamp: new Date(),
             type: 'text'
         };
 
         setMessages(prev => [...prev, userMessage]);
-        setInputMessage('');
+        if (!overrideMessage) {
+            setInputMessage('');
+        }
         setIsLoading(true);
 
         try {
@@ -67,13 +80,14 @@ const Chatbot = () => {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const response = await fetch('http://localhost:5001/api/chatbot/customer/message', {
+            const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const response = await fetch(`${apiURL}/api/chatbot/customer/message`, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
-                    message: inputMessage,
+                    message: textToSend,
                     sessionId,
-                    userId: user?._id || `guest_${Date.now()}`
+                    userId: user?._id || user?.id || `guest_${Date.now()}`
                 })
             });
 
@@ -84,9 +98,29 @@ const Chatbot = () => {
             const data = await response.json();
 
             if (data.success) {
+                let botText = data.response || '';
+                
+                // 1. Check for navigation request [NAVIGATE] /path
+                const navMatch = botText.match(/\[NAVIGATE\]\s+([^\s]+)/);
+                if (navMatch) {
+                    const targetRoute = navMatch[1];
+                    botText = botText.replace(/\[NAVIGATE\]\s+[^\s]+/, '').trim();
+                    setTimeout(() => {
+                        navigate(targetRoute);
+                    }, 800);
+                }
+
+                // 2. Check for action trigger [ACTION] sync_cart
+                if (botText.includes('[ACTION] sync_cart')) {
+                    botText = botText.replace('[ACTION] sync_cart', '').trim();
+                    if (fetchCart) {
+                        fetchCart();
+                    }
+                }
+
                 const botMessage = {
                     id: Date.now() + 1,
-                    text: data.response,
+                    text: botText,
                     sender: 'bot',
                     timestamp: new Date(),
                     intent: data.intent,
@@ -183,10 +217,7 @@ const Chatbot = () => {
             return;
         }
         
-        setInputMessage(action.message);
-        setTimeout(() => {
-            sendMessage();
-        }, 100);
+        sendMessage(action.message);
     };
 
     const clearChat = () => {
@@ -375,7 +406,7 @@ const Chatbot = () => {
                                         disabled={isLoading}
                                     />
                                     <button 
-                                        onClick={sendMessage}
+                                        onClick={() => sendMessage()}
                                         className="send-btn customer-send"
                                         disabled={!inputMessage.trim() || isLoading}
                                     >
